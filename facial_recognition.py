@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 import json
-import matplotlib.pyplot as plt
-from IPython.display import display, clear_output
+from google.colab.patches import cv2_imshow
+import time
 
 # Path for storing face data
 FACE_DATA_PATH = "faces_data.json"
@@ -28,9 +28,6 @@ face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 # Load previously registered face data
 known_faces_data = load_known_faces()
 
-# Initialize webcam
-cap = cv2.VideoCapture(0)
-
 # Confidence threshold for face recognition (we'll use histogram comparison)
 CONFIDENCE_THRESHOLD = 0.6
 is_registering = False  # Flag to enable face registration mode
@@ -53,21 +50,63 @@ def register_face(face, name):
     # Save the updated data
     save_known_faces(known_faces_data)
 
-# Function to show the captured frame in Colab using matplotlib
-def show_frame(frame):
-    # Convert from BGR to RGB
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # Use matplotlib to display the image
-    plt.imshow(frame_rgb)
-    plt.axis('off')  # Hide the axis
-    display(plt.gcf())
-    clear_output(wait=True)
+# Set up webcam input using JavaScript in Colab
+from google.colab.output import eval_js
+from IPython.display import display, HTML
+
+# JavaScript code to capture webcam stream and display it in Colab
+def start_webcam():
+    display(HTML('''
+        <script>
+        const video = document.createElement('video');
+        video.width = 640;
+        video.height = 480;
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const context = canvas.getContext('2d');
+        document.body.appendChild(video);
+
+        const constraints = {
+            video: {
+                facingMode: "user"
+            }
+        };
+
+        const streamPromise = navigator.mediaDevices.getUserMedia(constraints);
+        streamPromise.then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+            const capture = () => {
+                context.drawImage(video, 0, 0, video.width, video.height);
+                const frame = canvas.toDataURL('image/jpeg');
+                window.frame = frame;
+                requestAnimationFrame(capture);
+            };
+            capture();
+        }).catch(err => {
+            alert("Error accessing webcam: " + err);
+        });
+        </script>
+    '''))
+
+# Function to get the current webcam frame (called every time we need it)
+def get_frame_from_webcam():
+    return eval_js('window.frame')
+
+# Initialize the webcam
+start_webcam()
 
 # Main loop for capturing frames and detecting faces
 while True:
-    ret, frame = cap.read()
-    if not ret:
+    # Get the frame from webcam
+    img_data = get_frame_from_webcam()
+    
+    # Convert the base64 string into an image
+    img_array = np.frombuffer(base64.b64decode(img_data.split(',')[1]), dtype=np.uint8)
+    frame = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    
+    if frame is None:
         break
 
     # Convert frame to grayscale
@@ -116,16 +155,7 @@ while True:
                 is_registering = False
 
     # Show the live video feed with faces and names in Colab
-    show_frame(frame)
+    cv2_imshow(frame)
 
-    # Key actions
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):  # Quit on 'q'
-        break
-    elif key == ord('r'):  # Register a new face on 'r'
-        is_registering = True
-        print("Please look at the camera to register a new face.")
-
-# Release the webcam and close OpenCV windows
-cap.release()
-cv2.destroyAllWindows()
+    # Wait for a moment to simulate a continuous loop
+    time.sleep(0.1)  # Adjust time as needed
