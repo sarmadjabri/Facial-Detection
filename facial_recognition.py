@@ -2,8 +2,11 @@ import cv2
 import numpy as np
 import os
 import json
-from google.colab.patches import cv2_imshow
+import base64
 import time
+from google.colab.patches import cv2_imshow
+from IPython.display import display, HTML
+from google.colab.output import eval_js
 
 # Path for storing face data
 FACE_DATA_PATH = "faces_data.json"
@@ -51,10 +54,6 @@ def register_face(face, name):
     save_known_faces(known_faces_data)
 
 # Set up webcam input using JavaScript in Colab
-from google.colab.output import eval_js
-from IPython.display import display, HTML
-
-# JavaScript code to capture webcam stream and display it in Colab
 def start_webcam():
     display(HTML('''
         <script>
