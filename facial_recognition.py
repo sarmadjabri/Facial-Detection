@@ -35,6 +35,7 @@ is_registering = False  # Flag to enable face registration mode
 
 # Function to compare histograms (simple face recognition method)
 def compare_histograms(hist1, hist2):
+    # Correlation method (range between 0 and 1)
     return cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
 
 # Function to register a new face (capture and store the face)
@@ -86,12 +87,11 @@ while True:
                 best_match_name = known_faces_data['names'][i]
 
         # Display the recognized name and confidence
-        cv2.putText(frame, f"{best_match_name} ({best_match_confidence*100:.1f}%)", 
-                    (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-        
-        # If the confidence is above the threshold, recognize the face
-        if best_match_confidence < CONFIDENCE_THRESHOLD:
-            best_match_name = "Unknown"
+        if best_match_confidence >= CONFIDENCE_THRESHOLD:
+            cv2.putText(frame, f"{best_match_name} ({best_match_confidence*100:.1f}%)", 
+                        (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+        else:
+            cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         
         # If registering, capture the new face and name
         if is_registering:
