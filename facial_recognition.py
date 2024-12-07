@@ -28,6 +28,12 @@ def save_known_faces(data):
 # Initialize face detector
 face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
+# Check if the cascade is loaded properly
+if face_cascade.empty():
+    print("Error loading cascade classifier")
+else:
+    print("Cascade classifier loaded successfully.")
+
 # Load previously registered face data
 known_faces_data = load_known_faces()
 
@@ -131,43 +137,46 @@ while True:
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
     # Loop through detected faces
-    for (x, y, w, h) in faces:
-        # Extract the face region
-        face = frame[y:y+h, x:x+w]
-        
-        # Draw a rectangle around the face
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    if len(faces) > 0:
+        for (x, y, w, h) in faces:
+            # Extract the face region
+            face = frame[y:y+h, x:x+w]
+            
+            # Draw a rectangle around the face
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-        # Convert the face to grayscale and calculate the histogram
-        gray_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-        hist = cv2.calcHist([gray_face], [0], None, [256], [0, 256])  # Create a histogram
-        hist = cv2.normalize(hist, hist).flatten()  # Normalize the histogram
-        
-        # Compare the detected face with known faces
-        best_match_name = "Unknown"
-        best_match_confidence = 0.0
+            # Convert the face to grayscale and calculate the histogram
+            gray_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+            hist = cv2.calcHist([gray_face], [0], None, [256], [0, 256])  # Create a histogram
+            hist = cv2.normalize(hist, hist).flatten()  # Normalize the histogram
+            
+            # Compare the detected face with known faces
+            best_match_name = "Unknown"
+            best_match_confidence = 0.0
 
-        for i, known_hist in enumerate(known_faces_data['encodings']):
-            correlation = compare_histograms(hist, known_hist)
-            if correlation > best_match_confidence:
-                best_match_confidence = correlation
-                best_match_name = known_faces_data['names'][i]
+            for i, known_hist in enumerate(known_faces_data['encodings']):
+                correlation = compare_histograms(hist, known_hist)
+                if correlation > best_match_confidence:
+                    best_match_confidence = correlation
+                    best_match_name = known_faces_data['names'][i]
 
-        # Display the recognized name and confidence
-        if best_match_confidence >= CONFIDENCE_THRESHOLD:
-            cv2.putText(frame, f"{best_match_name} ({best_match_confidence*100:.1f}%)", 
-                        (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-        else:
-            cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+            # Display the recognized name and confidence
+            if best_match_confidence >= CONFIDENCE_THRESHOLD:
+                cv2.putText(frame, f"{best_match_name} ({best_match_confidence*100:.1f}%)", 
+                            (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            else:
+                cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
-        # If registering, capture the new face and name
-        if is_registering:
-            print("Registering new face...")
-            name = input("Enter the name of the person: ").strip()
-            if name:
-                register_face(face, name)
-                print(f"New face registered as {name}!")
-                is_registering = False
+            # If registering, capture the new face and name
+            if is_registering:
+                print("Registering new face...")
+                name = input("Enter the name of the person: ").strip()
+                if name:
+                    register_face(face, name)
+                    print(f"New face registered as {name}!")
+                    is_registering = False
+    else:
+        print("No faces detected")
 
     # Show the live video feed with faces and names in Colab
     cv2_imshow(frame)
