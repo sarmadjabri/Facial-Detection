@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import os
 import json
+import matplotlib.pyplot as plt
+from IPython.display import display, clear_output
 
 # Path for storing face data
 FACE_DATA_PATH = "faces_data.json"
@@ -51,6 +53,17 @@ def register_face(face, name):
     # Save the updated data
     save_known_faces(known_faces_data)
 
+# Function to show the captured frame in Colab using matplotlib
+def show_frame(frame):
+    # Convert from BGR to RGB
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Use matplotlib to display the image
+    plt.imshow(frame_rgb)
+    plt.axis('off')  # Hide the axis
+    display(plt.gcf())
+    clear_output(wait=True)
+
 # Main loop for capturing frames and detecting faces
 while True:
     ret, frame = cap.read()
@@ -92,7 +105,7 @@ while True:
                         (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
         else:
             cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-        
+
         # If registering, capture the new face and name
         if is_registering:
             print("Registering new face...")
@@ -102,8 +115,8 @@ while True:
                 print(f"New face registered as {name}!")
                 is_registering = False
 
-    # Show the live video feed with faces and names
-    cv2.imshow("Face Recognition", frame)
+    # Show the live video feed with faces and names in Colab
+    show_frame(frame)
 
     # Key actions
     key = cv2.waitKey(1) & 0xFF
