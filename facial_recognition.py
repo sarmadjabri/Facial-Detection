@@ -128,14 +128,17 @@ while True:
         minSize=(40, 40)     # Increase if faces are detected too small
     )
 
+    # Debug: Log the number of faces detected
+    print(f"Detected faces: {len(faces)}")
+
     # Loop through detected faces
     if len(faces) > 0:
         for (x, y, w, h) in faces:
+            # Draw a rectangle around the face (RED)
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+
             # Extract the face region
             face = frame[y:y+h, x:x+w]
-            
-            # Draw a rectangle around the face
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
             # Convert the face to grayscale and calculate the histogram
             gray_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
