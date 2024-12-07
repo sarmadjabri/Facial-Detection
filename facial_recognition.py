@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import os
-import json
 import base64
 import time
 from google.colab.patches import cv2_imshow
@@ -14,11 +12,7 @@ FACE_CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml
 
 # Load or initialize known face data (encodings and names)
 def load_known_faces():
-    if os.path.exists(FACE_DATA_PATH):
-        with open(FACE_DATA_PATH, 'r') as f:
-            return json.load(f)
-    else:
-        return {"names": [], "encodings": []}
+    return {"names": [], "encodings": []}
 
 # Save face data to file
 def save_known_faces(data):
@@ -28,22 +22,15 @@ def save_known_faces(data):
 # Initialize face detector
 face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
-# Check if the cascade is loaded properly
-if face_cascade.empty():
-    print("Error loading cascade classifier")
-else:
-    print("Cascade classifier loaded successfully.")
-
 # Load previously registered face data
 known_faces_data = load_known_faces()
 
-# Confidence threshold for face recognition (we'll use histogram comparison)
+# Confidence threshold for face recognition
 CONFIDENCE_THRESHOLD = 0.6
 is_registering = False  # Flag to enable face registration mode
 
 # Function to compare histograms (simple face recognition method)
 def compare_histograms(hist1, hist2):
-    # Correlation method (range between 0 and 1)
     return cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
 
 # Function to register a new face (capture and store the face)
@@ -130,11 +117,16 @@ while True:
     if frame is None:
         break
 
-    # Convert frame to grayscale
+    # Convert frame to grayscale for face detection
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect faces in the frame
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    faces = face_cascade.detectMultiScale(
+        gray, 
+        scaleFactor=1.1,     # Try increasing this if detection fails
+        minNeighbors=5,      # Adjust this parameter
+        minSize=(40, 40)     # Increase if faces are detected too small
+    )
 
     # Loop through detected faces
     if len(faces) > 0:
