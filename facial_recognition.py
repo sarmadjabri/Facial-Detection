@@ -9,16 +9,8 @@ from google.colab.output import eval_js
 # Path for storing face data
 FACE_CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
-# Load or initialize known face data (encodings and names)
-def load_known_faces():
-    return {"names": [], "encodings": []}
-
-# Initialize face detector
+# Load face detector
 face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
-
-# Confidence threshold for face recognition
-CONFIDENCE_THRESHOLD = 0.6
-is_registering = False  # Flag to enable face registration mode
 
 # Set up webcam input using JavaScript in Colab
 def start_webcam():
@@ -60,7 +52,7 @@ def start_webcam():
 def get_frame_from_webcam():
     return eval_js('window.frame')
 
-# Initialize the webcam
+# Start the webcam in Colab
 start_webcam()
 
 # Retry mechanism to ensure we get a valid frame
@@ -111,13 +103,13 @@ while True:
             # Draw a rectangle around the face (RED)
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
 
-            # You can also add text to the bounding box (e.g., "Face")
+            # Add text to indicate face detection
             cv2.putText(frame, "Face", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
     else:
         print("No faces detected.")
 
-    # Show the live video feed with faces and names in Colab
+    # Show the live video feed with faces in Colab
     cv2_imshow(frame)
 
     # Wait for a moment to simulate a continuous loop
