@@ -52,7 +52,7 @@ def start_webcam():
 def get_frame_from_webcam():
     return eval_js('window.frame')
 
-# Start the webcam in Colab
+# Initialize the webcam in Colab
 start_webcam()
 
 # Retry mechanism to ensure we get a valid frame
