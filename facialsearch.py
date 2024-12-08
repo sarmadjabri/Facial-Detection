@@ -6,6 +6,7 @@ from IPython.display import display, HTML
 from google.colab.output import eval_js
 import time
 import requests
+from googleapiclient.discovery import build
 
 # Path for Haar cascade classifier
 FACE_CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
@@ -53,18 +54,32 @@ def start_webcam():
 def get_frame_from_webcam():
     return eval_js('window.frame')
 
-# Function for reverse image search using TinEye
-def search_image_online(image_path):
-    url = "https://api.tineye.com/rest/search/"
-    api_key = "your_tineye_api_key"  # Replace with your actual TinEye API key
-    api_secret = "your_tineye_api_secret"  # Replace with your actual TinEye API secret
-
+# Function to upload image to Imgur and get the URL
+def upload_to_imgur(image_path, client_id):
+    headers = {'Authorization': f'Client-ID {client_id}'}
     with open(image_path, 'rb') as image_file:
-        files = {'image': image_file}
-        data = {'api_key': api_key, 'api_secret': api_secret}
-        
-        response = requests.post(url, files=files, data=data)
-        return response.json()
+        data = {'image': image_file.read()}
+        response = requests.post("https://api.imgur.com/3/upload", headers=headers, files=data)
+        response_json = response.json()
+        if response.status_code == 200:
+            return response_json['data']['link']  # Return image URL
+        else:
+            print("Imgur upload failed:", response_json)
+            return None
+
+# Function to search for the image using Google Custom Search API
+def search_image_online(image_url, api_key, cse_id):
+    service = build("customsearch", "v1", developerKey=api_key)
+    
+    # Perform the search query using the image URL
+    res = service.cse().list(
+        q="face",   # This could be anything related to the image context
+        cx=cse_id,
+        searchType='image',
+        imgUrl=image_url  # Search by image URL
+    ).execute()
+    
+    return res
 
 # Start webcam capture
 start_webcam()
@@ -72,6 +87,11 @@ start_webcam()
 # Retry mechanism to ensure we get a valid frame
 MAX_RETRIES = 10
 frame_attempts = 0
+
+# Replace with your own Google Custom Search API key and CSE ID
+API_KEY = 'YOUR_GOOGLE_API_KEY'
+CSE_ID = 'YOUR_CUSTOM_SEARCH_ENGINE_ID'
+IMGUR_CLIENT_ID = 'YOUR_IMGUR_CLIENT_ID'  # Get your Imgur Client ID from Imgur API
 
 # Main loop for capturing frames and detecting faces
 while True:
@@ -123,14 +143,22 @@ while True:
             # Save the face as a separate image (for use in a web search)
             cv2.imwrite('detected_face.jpg', face_img)
 
-            # Perform web search
-            search_results = search_image_online('detected_face.jpg')
-            if search_results.get("results"):
-                for result in search_results["results"]:
-                    print(f"Match found at: {result['domain']}")
-                    print(f"URL: {result['url']}")
-            else:
-                print("No matches found.")
+            # Upload the image to Imgur
+            image_url = upload_to_imgur('detected_face.jpg', IMGUR_CLIENT_ID)
+
+            if image_url:
+                print(f"Uploaded image to: {image_url}")
+
+                # Perform web search using Google Custom Search API
+                search_results = search_image_online(image_url, API_KEY, CSE_ID)
+                
+                if 'items' in search_results:
+                    for result in search_results['items']:
+                        print(f"Match found at: {result['displayLink']}")
+                        print(f"Title: {result['title']}")
+                        print(f"URL: {result['link']}")
+                else:
+                    print("No matches found.")
     else:
         print("No faces detected.")
 
