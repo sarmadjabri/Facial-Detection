@@ -89,9 +89,9 @@ while True:
     # Detect faces in the frame
     faces = face_cascade.detectMultiScale(
         gray, 
-        scaleFactor=1.05,     # Slightly lower to reduce false positives
-        minNeighbors=6,       # Increase to avoid detecting small areas (like eyes)
-        minSize=(80, 80)      # Increase to make sure it's not detecting too small objects
+        scaleFactor=1.1,     # Increase to improve accuracy
+        minNeighbors=5,      # Increase to avoid detecting smaller objects (e.g., eyes)
+        minSize=(80, 80)     # Make sure the face is large enough to be detected
     )
 
     # Debugging: Log the number of faces detected
