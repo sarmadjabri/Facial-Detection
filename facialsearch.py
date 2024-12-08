@@ -72,14 +72,22 @@ def search_image_online(image_url, api_key, cse_id):
     service = build("customsearch", "v1", developerKey=api_key)
     
     # Perform the search query using the image URL
-    res = service.cse().list(
-        q="face",   # This could be anything related to the image context
-        cx=cse_id,
-        searchType='image',
-        imgUrl=image_url  # Search by image URL
-    ).execute()
-    
-    return res
+    try:
+        res = service.cse().list(
+            q="face",   # This could be anything related to the image context
+            cx=cse_id,
+            searchType='image',
+            imgUrl=image_url  # Search by image URL
+        ).execute()
+        
+        if 'items' in res:
+            return res['items']
+        else:
+            return None
+
+    except Exception as e:
+        print(f"Error during search: {e}")
+        return None
 
 # Start webcam capture
 start_webcam()
@@ -152,8 +160,8 @@ while True:
                 # Perform web search using Google Custom Search API
                 search_results = search_image_online(image_url, API_KEY, CSE_ID)
                 
-                if 'items' in search_results:
-                    for result in search_results['items']:
+                if search_results:
+                    for result in search_results:
                         print(f"Match found at: {result['displayLink']}")
                         print(f"Title: {result['title']}")
                         print(f"URL: {result['link']}")
