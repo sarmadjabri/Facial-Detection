@@ -16,9 +16,6 @@ def load_known_faces():
 # Initialize face detector
 face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
-# Load previously registered face data
-known_faces_data = load_known_faces()
-
 # Confidence threshold for face recognition
 CONFIDENCE_THRESHOLD = 0.6
 is_registering = False  # Flag to enable face registration mode
