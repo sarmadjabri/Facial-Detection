@@ -1,15 +1,15 @@
 import cv2
 import numpy as np
 import base64
-import time
 from google.colab.patches import cv2_imshow
 from IPython.display import display, HTML
 from google.colab.output import eval_js
+import time
 
-# Path for storing face data
+# Path for Haar cascade classifier
 FACE_CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 
-# Load face detector
+# Load the face cascade classifier
 face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
 # Set up webcam input using JavaScript in Colab
@@ -52,7 +52,7 @@ def start_webcam():
 def get_frame_from_webcam():
     return eval_js('window.frame')
 
-# Initialize the webcam in Colab
+# Start webcam capture
 start_webcam()
 
 # Retry mechanism to ensure we get a valid frame
