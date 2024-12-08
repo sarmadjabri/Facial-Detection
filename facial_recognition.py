@@ -89,9 +89,9 @@ while True:
     # Detect faces in the frame
     faces = face_cascade.detectMultiScale(
         gray, 
-        scaleFactor=1.1,     # Adjust if detection is poor
-        minNeighbors=5,      # Adjust for better detection accuracy
-        minSize=(40, 40)     # Adjust the size of detected faces
+        scaleFactor=1.05,     # Slightly lower to reduce false positives
+        minNeighbors=6,       # Increase to avoid detecting small areas (like eyes)
+        minSize=(80, 80)      # Increase to make sure it's not detecting too small objects
     )
 
     # Debugging: Log the number of faces detected
@@ -101,10 +101,10 @@ while True:
     if len(faces) > 0:
         for (x, y, w, h) in faces:
             # Draw a rectangle around the face (RED)
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
             # Add text to indicate face detection
-            cv2.putText(frame, "Face", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+            cv2.putText(frame, "Face", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
     else:
         print("No faces detected.")
