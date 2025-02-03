@@ -7,6 +7,4 @@ the program will attempt to do the following things:
 - work with multiple face
 - identify which face is which
 
-
-the facial search should:
-- search the web foir a match on the image displaying details on detected person in near future tk
+Works on google colab best
