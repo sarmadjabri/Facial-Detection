@@ -5,6 +5,5 @@ Simple program adjusted to use of google collab notebooks so you can run it in y
 the program will attempt to do the following things:
 - put a box around the detected face utilizing the webcam
 - work with multiple face
-- identify which face is which
 
 Works on google colab best
