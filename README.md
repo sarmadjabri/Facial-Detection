@@ -1,4 +1,4 @@
-# Facial-Recogniton
+# Facial-Recognition
 
 Simple program adjusted to use of google collab notebooks so you can run it in your browser
 
